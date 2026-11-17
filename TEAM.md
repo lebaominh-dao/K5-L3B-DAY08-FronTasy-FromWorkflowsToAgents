@@ -5,7 +5,7 @@
 - Tên nhóm: FronTasy
 - Lớp: L3B
 - Repo nhóm: `K5-L3B-DAY08-FronTasy-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt: https://github.com/lebaominh-dao/K5-L3B-DAY08-FronTasy-FromWorkflowsToAgents, nhánh `main`, commit chốt [pending]
+- URL repo, nhánh nộp, commit chốt: https://github.com/lebaominh-dao/K5-L3B-DAY08-FronTasy-FromWorkflowsToAgents, nhánh `main`, commit chốt `beb2eb9`
 
 ## Thành viên
 
