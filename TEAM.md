@@ -5,15 +5,15 @@
 - Tên nhóm: FronTasy
 - Lớp: L3B
 - Repo nhóm: `K5-L3B-DAY08-FronTasy-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt: [pending]
+- URL repo, nhánh nộp, commit chốt: https://github.com/lebaominh-dao/K5-L3B-DAY08-FronTasy-FromWorkflowsToAgents, nhánh `main`, commit chốt [pending]
 
 ## Thành viên
 
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
 |   1 | Đào Lê Bảo Minh | 2A202604010 | 26ai.minhdlb@vinuni.edu.vn | https://github.com/lebaominh-dao | workflow + integration |
-|   2 | Nguyễn Đức Hải | 2A202603943 | [pending] | [pending] | single agent |
-|   3 | Nguyễn Văn Lên | 2A202604007 | [pending] | [pending] | orchestrator + handoff |
+|   2 | Nguyễn Đức Hải | 2A202603943 | ndhai255.work@gmail.com | https://github.com/ndhai255 | single agent |
+|   3 | Nguyễn Văn Lên | 2A202604007 | nguyenvanlen24122004@gmail.com | https://github.com/len2412 | orchestrator + handoff |
 |   4 | Cao Phạm Thành Đạt | 2A202603970 | 26ai.datcpt@vinuni.edu.vn | https://github.com/tcaopham216-gif | ledger + evaluation |
 
 Gợi ý chia vai:
@@ -28,8 +28,9 @@ Gợi ý chia vai:
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
 | Đào Lê Bảo Minh | workflow + integration | `f504017` (workflow CP2), `ea8639f` (workflow CP3: truyền `crash_at`), `158d7f9` (test approval) | `src/tests/test_workflow_approval_gate.py` (thêm mới, 6 trường hợp) |
+| Nguyễn Đức Hải | single agent | `528121c` (single CP2 và CP3), `c2e0aa0` và `01f66f8` (test single), `b029bbb` (research card R4) | `src/tests/test_single_shape.py` (thêm mới, 5 test chạy trên single và swarm) |
 | Cao Phạm Thành Đạt | ledger + evaluation | `dc76b0e` | `src/tests/test_shape_durability.py` (20 trường hợp trên bốn shape) |
-| Nguyễn Văn Lên | orchestrator + handoff | `443e207` (orchestrator CP2 và CP3), `a2ea4fd` (test approval) | `src/tests/test_trace_privacy.py` (thêm mới, quét trace/stdout/stderr của 3 shape × 14 claim) |
+| Nguyễn Văn Lên | orchestrator + handoff | `443e207` (orchestrator CP2 và CP3), `a2ea4fd` (test quét trace và stdout) | `src/tests/test_trace_privacy.py` (thêm mới, quét trace/stdout/stderr của 3 shape × 14 claim) |
 
 ## Cá nhân
 
@@ -63,6 +64,24 @@ Sao chép mục dưới đây cho từng thành viên.
 - `python -m pytest -q tests/test_workflow_approval_gate.py`: 6 passed.
 - PR của phần workflow: #1, #5, #6. Báo cáo cá nhân: `report/team/2A202604010_DaoLeBaoMinh.md`.
 
+## 2A202603943_NguyenDucHai
+
+### Phần việc phụ trách
+
+- Shape B `single` (`src/lab8/shapes/single.py`): một ReAct agent, tối đa 8 bước.
+- Phiếu nghiên cứu R4 (`report/team/research_card.md`) và phần so sánh 4 shape trong `report/team/group_report.md`.
+
+### Đóng góp cụ thể
+
+- `528121c`: cài đặt shape single. `decide` chỉ chọn tool đọc; sau vòng lặp code của shape mới gọi `durability.issue_refund` với quote đầy đủ và `crash_at`.
+- `c2e0aa0`, `01f66f8`: thêm `src/tests/test_single_shape.py` (gọi lại cùng claim, approval của claim khác, không lộ canary, giữ quote đầy đủ khi host từ chối, dừng đúng 8 bước).
+- `b029bbb`: điền research card R4 kèm ablation single so với swarm (`src/reports/ablation_r4_single_vs_swarm.json`).
+
+### Bằng chứng
+
+- `python -m pytest -q -o addopts= tests/test_single_shape.py`: 37 passed.
+- PR #3, #4, #8. Báo cáo cá nhân: `report/team/2A202603943_NguyenDucHai.md`.
+
 ## 2A202603970_CaoPhamThanhDat
 
 ### Phần việc phụ trách
@@ -87,7 +106,7 @@ Sao chép mục dưới đây cho từng thành viên.
 ### Đóng góp cụ thể
 
 - `443e207`: triển khai orchestrator dùng `make_handoff`, investigator chỉ đọc, quote từ order view và host `issue_refund` với quote đầy đủ cùng `crash_at`.
-- `a2ea4fd`Thêm `src/tests/test_trace_privacy.py` để rà secret và dữ liệu riêng tư trong trace/stdout/stderr của ba shape.
+- `a2ea4fd`: thêm `src/tests/test_trace_privacy.py` để rà secret và dữ liệu riêng tư trong trace/stdout/stderr của ba shape.
 
 ### Bằng chứng
 
