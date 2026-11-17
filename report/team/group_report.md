@@ -69,6 +69,8 @@ Bảng so sánh 4 shape trên bộ public (từ `src/reports/benchmark.json`): p
 
 - Ba shape nhóm viết pass cả 70 trial. Swarm fail đúng một trial, `R-swarm-C-002-s55`: ticket ghi trễ 5 ngày, order ghi 2 ngày, swarm trả `resolved` thay vì `denied`.
 - Workflow có cost/success thấp nhất. Orchestrator đắt nhất trong ba shape nhóm viết vì số tool call gấp đôi (5,57 so với 2,79), dù không gọi model.
+- Single gọi đúng số tool như workflow (2,79), nhưng mỗi bước `decide` thêm một model call (3,79 lần mỗi trial). Phần cho agent tự chọn bước tiếp theo đắt thêm 4,54 VND mỗi lần thành công (+16%) mà không tăng độ chính xác: trên bộ public, task claim là chuỗi tuần tự (đọc claim, đọc đơn, tính tiền, gọi host) nên thêm tự chủ không mang lại lợi ích đo được.
+- Chạy lại `python -m lab8.benchmark --shapes workflow,single,orchestrator,swarm --cases data/public_claims.jsonl --seeds 11,22,33,44,55 --out reports/benchmark.json` trên commit `0d4e2a8` cho số trùng khớp hoàn toàn với file đã commit.
 - Cột steps đếm số event trong trace nên phụ thuộc cách mỗi shape ghi trace. Nhóm không dùng cột này để so khối lượng việc giữa các shape; phần này được phân tích trong `research_card.md`.
 - Cost là giá mô phỏng, latency là `unavailable`.
 
