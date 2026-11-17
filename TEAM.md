@@ -28,6 +28,7 @@ Gợi ý chia vai:
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
 | Đào Lê Bảo Minh | workflow + integration | `f504017` (workflow CP2), `ea8639f` (workflow CP3: truyền `crash_at`), `158d7f9` (test approval) | `src/tests/test_workflow_approval_gate.py` (thêm mới, 6 trường hợp) |
+| Nguyễn Văn Lên | orchestrator + handoff | `443e207` (orchestrator CP2 và CP3), `a2ea4fd` (test approval) | `src/tests/test_trace_privacy.py` (thêm mới, quét trace/stdout/stderr của 3 shape × 14 claim) |
 
 ## Cá nhân
 
@@ -61,16 +62,19 @@ Sao chép mục dưới đây cho từng thành viên.
 - `python -m pytest -q tests/test_workflow_approval_gate.py`: 6 passed.
 - PR của phần workflow: #1, #5, #6. Báo cáo cá nhân: `report/team/2A202604010_DaoLeBaoMinh.md`.
 
-## MSSV_HoTen
+## 2A202604007_NguyenVanLen
 
 ### Phần việc phụ trách
 
--
+- Shape C: Orchestrator + handoff; rà trace/stdout của ba shape.
 
 ### Đóng góp cụ thể
 
--
+- `443e207`: triển khai orchestrator dùng `make_handoff`, investigator chỉ đọc, quote từ order view và host `issue_refund` với quote đầy đủ cùng `crash_at`.
+- `a2ea4fd`Thêm `src/tests/test_trace_privacy.py` để rà secret và dữ liệu riêng tư trong trace/stdout/stderr của ba shape.
 
 ### Bằng chứng
 
--
+- `python -m pytest -q -m student -o addopts= -k orchestrator`: 62 passed.
+- `python -m pytest -q tests/test_trace_privacy.py`: 42 passed.
+- Báo cáo cá nhân: `report/team/2A202604007_NguyenVanLen.md`.
