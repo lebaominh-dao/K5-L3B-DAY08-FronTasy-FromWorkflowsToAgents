@@ -14,7 +14,7 @@
 |   1 | Đào Lê Bảo Minh | 2A202604010 | 26ai.minhdlb@vinuni.edu.vn | https://github.com/lebaominh-dao | workflow + integration |
 |   2 | Nguyễn Đức Hải | 2A202603943 | [pending] | [pending] | single agent |
 |   3 | Nguyễn Văn Lên | 2A202604007 | [pending] | [pending] | orchestrator + handoff |
-|   4 | Cao Phạm Thành Đạt | 2A202603970 | [pending] | https://github.com/tcaopham216-gif | ledger + evaluation |
+|   4 | Cao Phạm Thành Đạt | 2A202603970 | 26ai.datcpt@vinuni.edu.vn | https://github.com/tcaopham216-gif | ledger + evaluation |
 
 Gợi ý chia vai:
 

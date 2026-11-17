@@ -4,7 +4,7 @@
 
 - Họ tên: Cao Phạm Thành Đạt
 - MSSV: 2A202603970
-- Email: [Thành viên bổ sung]
+- Email: 26ai.datcpt@vinuni.edu.vn
 - GitHub: [tcaopham216-gif](https://github.com/tcaopham216-gif)
 
 ## 2. Phần việc phụ trách
@@ -38,9 +38,11 @@ Lượt lỗi duy nhất là `R-swarm-C-002-s55`. Ticket ghi trễ 5 ngày và �
 
 ## 5. Công cụ AI đã dùng
 
-- ChatGPT (Codex) hỗ trợ viết test, chạy lab, đối chiếu bằng chứng và soạn báo cáo.
+- ChatGPT (Codex) hỗ trợ viết test, chạy lab, đối chiếu bằng chứng và soạn báo cáo, gồm phần tự đánh giá dựa trên kết quả đã kiểm chứng.
 - Kết quả được đối chiếu bằng `pytest`, thử crash và resume qua `lab8.run`, chạy `lab8.crash_test` và so sánh JSON do `lab8.benchmark` sinh ra.
 
 ## 6. Tự đánh giá
 
-*[Thành viên tự điền]*
+Tôi đã hoàn thành phần kiểm thử và đánh giá bằng các kịch bản có thể chạy lại trên cả bốn shape. Việc kiểm tra ledger, audit và checkpoint ngay lúc crash giúp tôi xác định chính xác lỗi ban đầu của Workflow: chương trình hoàn tiền nhưng điểm crash chưa được kích hoạt. Sau khi bản sửa được merge, kết quả chạy lại xác nhận cả ba điểm crash đều hoạt động và mỗi claim chỉ có một refund.
+
+Điểm tôi cần cải thiện là ghi bằng chứng theo từng lớp kiểm thử rõ hơn. Crash suite đạt 20/20, phép thử ba điểm crash kiểm riêng đường chạy của từng shape, còn benchmark đo độ đúng và chi phí mô phỏng trên 14 claim public. Khi trình bày kết quả, tôi cần nêu rõ phạm vi của từng phép đo để nhóm có thể dùng đúng số liệu.
