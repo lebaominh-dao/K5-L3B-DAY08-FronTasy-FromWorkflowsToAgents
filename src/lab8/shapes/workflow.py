@@ -48,16 +48,14 @@ def run_claim(
     store_path: str,
     crash_at: str | None = None,
 ) -> RunResult:
-    # TODO CP3 (student): truyền crash_at vào durability.issue_refund, không bắt InjectedCrash.
-    del crash_at
     conn = connect(store_path)
     try:
-        return _run(conn, claim_id, seed=seed)
+        return _run(conn, claim_id, seed=seed, crash_at=crash_at)
     finally:
         conn.close()
 
 
-def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int) -> RunResult:
+def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int, crash_at: str | None) -> RunResult:
     budget = Budget()
     trace = Trace(make_run_id(SHAPE, claim_id, seed))
 
@@ -107,7 +105,9 @@ def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int) -> RunResult:
 
     # Step 6: hand the FULL quote to the host. It checks approval, the per-order cap
     # and idempotency, and writes the policy_denied audit when it refuses.
-    outcome = issue_refund(conn, claim_id, proposal)
+    # crash_at goes straight to the host. InjectedCrash is not caught here: it must
+    # leave run_claim so a resume on the same store can prove there is still one refund.
+    outcome = issue_refund(conn, claim_id, proposal, crash_at=crash_at)
     trace.add("refund", {"ok": outcome["ok"], "reason": outcome["reason"], "conflict": outcome["conflict"]})
     if not outcome["ok"]:
         return end("failed" if outcome["conflict"] else "denied", proposal, outcome["reason"])
