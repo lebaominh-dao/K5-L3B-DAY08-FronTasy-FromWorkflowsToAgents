@@ -73,18 +73,18 @@ Thành viên 2, phụ trách **shape B `single`** (một ReAct agent):
 Tôi hoàn toàn tự tin giải thích và bảo vệ trực tiếp trước người chấm các quyết định kỹ thuật cốt lõi trong shape `single`:
 
 1. **Vì sao truyền quote đầy đủ vào `durability.issue_refund`:**
-   - `durability.issue_refund` đóng vai trò là Host Gate — chốt chặn duy nhất thực thi quyền ghi vào cơ sở dữ liệu (`ledger`) và kiểm soát luật nghiệp vụ `per-order cap` (`sum(amount_vnd) <= order.fee`).
+   - `durability.issue_refund` đóng vai trò là Host Gate — chốt chặn duy nhất thực thi quyền ghi vào cơ sở dữ liệu (`ledger`) và kiểm soát luật nghiệp vụ `per-order cap`: tổng tiền hoàn của một đơn không vượt entitlement lớn nhất của đơn đó (và không vượt `paid_vnd`). Trần này không phải phí ship: ở C-014, đơn O-515 đã được hoàn 30.000 tiền ship, nay hỏng hàng đã verify với entitlement 150.000, host chỉ trả thêm phần chênh 120.000.
    - Shape không được tự ý trừ đi số tiền đã hoàn trước đó (net amount) rồi mới gửi sang host. Nếu shape tự trừ trước, khi host thực thi đối soát lại trừ tiếp lần thứ hai, dẫn đến số tiền hoàn bị sai lệch và chắc chắn sẽ trượt các ca kiểm thử đơn hàng hoàn nhiều lần (như test T14).
    - Khi host từ chối yêu cầu (do approval hết hạn như C-007 hoặc đơn đã hoàn chạm trần như C-013), việc shape giữ nguyên `proposal_amount` là giá trị quote đầy đủ đảm bảo audit log `policy_denied` phản ánh chính xác số tiền mà luồng nghiệp vụ đã đề xuất, phục vụ đúng mục đích đối soát và kiểm toán tài chính.
 
 2. **Vì sao `decide()` phải tự duy trì `memory`:**
    - Hàm runtime `run_react` của lab được thiết kế tinh gọn: ở mỗi bước lặp, nó chỉ phản hồi kết quả của tool vừa thực thi gần nhất (`last_tool`, `last_result`), chứ không tự động tích lũy toàn bộ lịch sử các tool đã gọi trước đó trong tham số `seen`.
-   - Nếu hàm `decide()` không có một cấu trúc lưu trữ riêng (`memory: dict[str, Any]` thông qua closure của `make_decide`), thì sau khi agent gọi tool thứ hai (`lookup_order`), thông tin từ `get_claim_view` sẽ bị mất. Khi đó, agent sẽ bị kẹt trong vòng lặp vô tận (liên tục đọc lại claim) cho đến khi cạn ngân sách và bị ngắt cưỡng bức ở trần 8 bước (`step_cap`).
+   - Nếu hàm `decide()` không có một cấu trúc lưu trữ riêng (`memory: dict[str, Any]` thông qua closure của `make_decide`), thì sau khi agent gọi tool thứ hai (`lookup_order`), thông tin từ `get_claim_view` sẽ bị mất. Khi đó, agent sẽ bị kẹt trong vòng lặp vô tận (liên tục đọc lại claim) cho đến khi bị ngắt cưỡng bức ở trần 8 bước (`step_cap`).
 
 3. **Trace cố ý không ghi các field nào và lý do:**
    - Tuân thủ tuyệt đối [Trace contract v1](docs/contracts.md#trace-contract-v1) và nguyên tắc bảo vệ dữ liệu nhạy cảm:
      - **Không ghi token bí mật:** Loại bỏ hoàn toàn `parent_secret` và các token canary (`CANARY_SECRET_*`) có trong dòng claim thô.
-     - **Không ghi dữ liệu định danh cá nhân (PII):** Số điện thoại khách hàng, địa chỉ giao hàng, ghi chú nội bộ từ bảng `orders` đều bị loại trừ thông qua hàm `safe_dump()` và view đã sanitize.
+     - **Không ghi dữ liệu định danh cá nhân (PII):** Số điện thoại khách hàng, địa chỉ giao hàng, ghi chú nội bộ từ bảng `orders` đều bị loại trừ vì trace chỉ ghi order view do `lookup_order` trả về, mà `lookup_order` chỉ lấy các field trong allowlist `ORDER_FIELDS` (`src/lab8/tools.py`). Hàm `safe_dump()` chỉ sao chép payload để ghi vào trace, không tự lọc gì.
      - **Không ghi nội dung thô của `ticket`:** Ticket là dữ liệu do người dùng nhập từ bên ngoài, tiềm ẩn nguy cơ prompt injection hoặc thông tin sai sự thật (như case C-002 seed 55 khai khống trễ 5 ngày thay vì 2 ngày như dữ liệu DB).
      - **Không ghi prompt đầy đủ:** Không đưa toàn bộ prompt gửi MockLLM vào trace để tránh phình dung lượng lưu trữ không cần thiết.
    - Trace chỉ ghi đúng các sự kiện nằm trong danh sách allowlist: `tool_call`, `order` (sanitized), `quote` (sanitized), `refund`, `decision`, `crash`.
@@ -93,7 +93,7 @@ Tôi hoàn toàn tự tin giải thích và bảo vệ trực tiếp trước ng
 
 - **Những phần làm tốt và hoàn toàn làm chủ:**
   - **Ranh giới Code / Model vững chắc:** Xác lập nguyên tắc bất di bất dịch là model chỉ đóng vai trò bộ điều hướng đọc thông tin (`get_claim_view` -> `lookup_order` -> `compute_compensation`); tuyệt đối không để model tự tính tiền bồi thường hay ghi sổ. Toàn bộ logic tính toán tiền thuộc về hàm nghiệp vụ xác định, và ghi sổ thuộc về Host Gate.
-  - **Hệ thống kiểm thử toàn diện:** Tự thiết kế và cài đặt 5 nhóm test case chuyên biệt trong `src/tests/test_single_shape.py`, bao phủ đầy đủ các kịch bản biên: tính lũy quyền (idempotency với C-011), phát hiện mượn approval trái phép (C-901), kiểm soát rò rỉ secret/PII, bảo toàn quote khi host từ chối, và cơ chế ngắt cưỡng bức đúng 8 bước.
+  - **Hệ thống kiểm thử toàn diện:** Tự thiết kế và cài đặt 5 nhóm test case chuyên biệt trong `src/tests/test_single_shape.py`, bao phủ đầy đủ các kịch bản biên: tính lũy đẳng (idempotency, với C-011), phát hiện mượn approval trái phép (C-901), kiểm soát rò rỉ secret/PII, bảo toàn quote khi host từ chối, và cơ chế ngắt cưỡng bức đúng 8 bước.
   - **Nghiên cứu thực nghiệm và phân tích số liệu:** Thực hiện trọn vẹn Research Card R4 và ablation single vs swarm; phát hiện chính xác điểm lỗi then chốt của swarm ở trial `R-swarm-C-002-s55` (do tin ticket thay vì order row), đồng thời chỉ ra confounder của việc so sánh số bước `steps` giữa các topology khác nhau.
   - **Kiểm chứng độc lập:** Tự tay chạy lại toàn bộ test suite, benchmark suite, kiểm tra các dòng ledger/audit trong SQLite sau crash test, không phụ thuộc vào bất kỳ kết quả suy đoán nào.
 
@@ -105,5 +105,5 @@ Tôi hoàn toàn tự tin giải thích và bảo vệ trực tiếp trước ng
 ### 6.3 Bài học kinh nghiệm và hướng cải tiến nếu làm lại
 
 1. **Linh hoạt hóa cơ chế rẽ nhánh trong `decide()`:** Hiện tại, logic ra quyết định của `single.py` vẫn mang tính bán tuần tự (kiểm tra lần lượt từng điều kiện trong memory). Nếu phát triển cho môi trường production với nhiều trường hợp ngoại lệ, tôi sẽ cho phép agent có khả năng tra cứu bù thông tin (ví dụ: tìm kiếm qua mã vận đơn phụ khi không tìm thấy order_id) hoặc tự động retry khi gặp lỗi mạng tạm thời.
-2. **Thiết kế kiến trúc Hybrid (Workflow-First, Agent-Fallback):** Dữ liệu thực nghiệm trên 14 claim public cho thấy Workflow đạt pass rate 1.000 với chi phí chỉ 27.86 VND, rẻ hơn 16% so với Single (32.39 VND) do Single tốn thêm trung bình 3.79 model calls cho mỗi trial. Nếu làm lại, tôi sẽ đề xuất kiến trúc ưu tiên chạy Workflow cho 90% trường hợp chuẩn, và chỉ chuyển giao (escalate/fallback) sang Single ReAct khi dữ liệu bị thiếu hoặc có mâu thuẫn phức tạp.
+2. **Thiết kế kiến trúc Hybrid (Workflow-First, Agent-Fallback):** Dữ liệu thực nghiệm trên 14 claim public cho thấy Workflow đạt pass rate 1.000 với chi phí chỉ 27.86 VND mỗi lần thành công, rẻ hơn khoảng 14% so với Single (32.39 VND; nói cách khác Single đắt hơn Workflow khoảng 16%) do Single tốn thêm trung bình 3.79 model calls cho mỗi trial. Nếu làm lại, tôi sẽ đề xuất kiến trúc ưu tiên chạy Workflow cho 90% trường hợp chuẩn, và chỉ chuyển giao (escalate/fallback) sang Single ReAct khi dữ liệu bị thiếu hoặc có mâu thuẫn phức tạp.
 3. **Tự động hóa kiểm tra hợp đồng Trace (Contract Linter):** Xây dựng một script tiện ích riêng để quét và xác thực tự động toàn bộ file trace JSON sau các lượt chạy benchmark, thay vì phải kiểm tra thủ công hoặc viết test assertion riêng lẻ cho từng file.
