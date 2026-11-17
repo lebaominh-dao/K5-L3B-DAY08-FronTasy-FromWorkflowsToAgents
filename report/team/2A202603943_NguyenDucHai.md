@@ -46,7 +46,7 @@ Thành viên 2, phụ trách **shape B `single`** (một ReAct agent):
 
 ## 4. Bằng chứng
 
-- Test shape single trên bộ public: `python -m pytest -q -m student -o addopts= -k "single and not swarm and not workflow and not orchestrator"` → 81 passed (62 test ma trận public + 19 test của tôi).
+- Test shape single trên bộ public: `python -m pytest -q -m student -o addopts= -k "single and not swarm and not workflow and not orchestrator"` → 86 passed (62 test ma trận public + 19 test của tôi + 5 test single trong `test_shape_durability.py` của Thành viên 4).
 - Toàn repo trên commit `0d4e2a8`: `python -m pytest -q` → 102 passed; `python -m pytest -q -m student -o addopts=` → 305 passed.
 - Crash: `python -m lab8.crash_test --count 20 --out reports/crash.json` → `crash_safety 20/20`. Chạy tay C-012 với `--crash-at` ở cả ba điểm (`before_effect`, `after_effect_before_checkpoint`, `after_checkpoint`), resume xong đều còn đúng 1 dòng ledger 35000 và 1 audit.
 - Benchmark (`src/reports/benchmark.json`): single đạt pass rate 1.000, pass^5 1.000, variance 0, cost/success 32.39 VND mô phỏng, 3.79 model call và 2.79 tool call mỗi trial. Chạy lại lệnh benchmark ra số trùng khớp với file đã commit.

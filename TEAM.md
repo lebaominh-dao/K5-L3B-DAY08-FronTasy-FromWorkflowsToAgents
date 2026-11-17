@@ -28,7 +28,7 @@ Gợi ý chia vai:
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
 | Đào Lê Bảo Minh | workflow + integration | `f504017` (workflow CP2), `ea8639f` (workflow CP3: truyền `crash_at`), `158d7f9` (test approval) | `src/tests/test_workflow_approval_gate.py` (thêm mới, 6 trường hợp) |
-| Nguyễn Đức Hải | single agent | `528121c` (single CP2 và CP3), `c2e0aa0` và `01f66f8` (test single), `b029bbb` (research card R4) | `src/tests/test_single_shape.py` (thêm mới, 5 test chạy trên single và swarm) |
+| Nguyễn Đức Hải | single agent | `528121c` (single CP2 và CP3), `c2e0aa0` (test retry, approval, canary), `01f66f8` (test host từ chối, trần 8 bước) | `src/tests/test_single_shape.py` (thêm mới, 5 test chạy trên swarm và single) |
 | Cao Phạm Thành Đạt | ledger + evaluation | `dc76b0e` | `src/tests/test_shape_durability.py` (20 trường hợp trên bốn shape) |
 | Nguyễn Văn Lên | orchestrator + handoff | `443e207` (orchestrator CP2 và CP3), `a2ea4fd` (test quét trace và stdout) | `src/tests/test_trace_privacy.py` (thêm mới, quét trace/stdout/stderr của 3 shape × 14 claim) |
 
@@ -68,19 +68,20 @@ Sao chép mục dưới đây cho từng thành viên.
 
 ### Phần việc phụ trách
 
-- Shape B `single` (`src/lab8/shapes/single.py`): một ReAct agent, tối đa 8 bước.
-- Phiếu nghiên cứu R4 (`report/team/research_card.md`) và phần so sánh 4 shape trong `report/team/group_report.md`.
+- Shape B `single` (`src/lab8/shapes/single.py`): CP2, CP3 và test riêng cho shape.
+- Research card R4 kèm ablation single vs swarm; phần so sánh 4 shape trong `report/team/group_report.md`.
 
 ### Đóng góp cụ thể
 
-- `528121c`: cài đặt shape single. `decide` chỉ chọn tool đọc; sau vòng lặp code của shape mới gọi `durability.issue_refund` với quote đầy đủ và `crash_at`.
-- `c2e0aa0`, `01f66f8`: thêm `src/tests/test_single_shape.py` (gọi lại cùng claim, approval của claim khác, không lộ canary, giữ quote đầy đủ khi host từ chối, dừng đúng 8 bước).
-- `b029bbb`: điền research card R4 kèm ablation single so với swarm (`src/reports/ablation_r4_single_vs_swarm.json`).
+- `528121c`: viết single theo ReAct. `decide()` chỉ chọn tool đọc (`get_claim_view`, `lookup_order`, `compute_compensation`) và tự giữ memory; tiền do `compute_compensation` tính, shape truyền quote đầy đủ cùng `crash_at` vào `durability.issue_refund`, không nuốt `InjectedCrash`. Trace chỉ ghi field allowlist.
+- `c2e0aa0`, `01f66f8`: thêm `src/tests/test_single_shape.py` gồm 5 test (gọi lại cùng claim, mượn approval claim khác, canary leak, host từ chối vẫn giữ quote đầy đủ, dừng đúng 8 bước), chạy trên cả swarm và single.
+- `b029bbb`: điền research card R4 và `src/reports/ablation_r4_single_vs_swarm.json`.
 
 ### Bằng chứng
 
-- `python -m pytest -q -o addopts= tests/test_single_shape.py`: 37 passed.
-- PR #3, #4, #8. Báo cáo cá nhân: `report/team/2A202603943_NguyenDucHai.md`.
+- `python -m pytest -q -m student -o addopts= -k "single and not swarm and not workflow and not orchestrator"`: 86 passed.
+- `python -m pytest -q tests/test_single_shape.py -o addopts=`: 37 passed.
+- PR của phần single: #3, #4, #8, #13. Báo cáo cá nhân: `report/team/2A202603943_NguyenDucHai.md`.
 
 ## 2A202603970_CaoPhamThanhDat
 
